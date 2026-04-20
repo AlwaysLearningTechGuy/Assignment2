@@ -10,7 +10,7 @@ RUN pip install --no-cache-dir fastapi uvicorn pytest httpx
 # Copy the application code
 COPY ./app /app/app
 
-# Expose the port FastAPI runs on
+# Expose the port
 EXPOSE 8000
 
 # Command to run the application
