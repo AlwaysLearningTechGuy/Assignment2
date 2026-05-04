@@ -1,6 +1,8 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, Request, HTTPException
 from pydantic import BaseModel
 import random
+
+from app.rate_limiter import rate_limiter
 
 app = FastAPI(title="Wonderful and Mysterious API")
 
@@ -14,18 +16,40 @@ class SubmitPayload(BaseModel):
     user: str
     data: dict
 
+# ---------------------------
+# Rate Limiting Middleware
+# ---------------------------
+@app.middleware("http")
+async def rate_limit_middleware(request: Request, call_next):
+    client_ip = request.client.host
+
+    if not rate_limiter.is_allowed(client_ip):
+        raise HTTPException(status_code=429, detail="Too Many Requests")
+
+    return await call_next(request)
+
+# ---------------------------
+# API Endpoints
+# ---------------------------
+
 @app.get("/api/weather")
 async def get_weather(city: str = "Seattle"):
     return {"city": city, "temp": "22°C", "condition": "Partly Cloudy"}
 
 @app.get("/api/insight")
 async def get_insight(topic: str = "general"):
-    # Clean version: simple id and msg
-    return {"id": random.randint(100, 999), "msg": f"Strategic insight regarding {topic}."}
+    return {
+        "id": random.randint(100, 999),
+        "msg": f"Strategic insight regarding {topic}."
+    }
 
 @app.get("/api/fortune")
 async def get_fortune():
-    fortunes = ["A grand adventure awaits.", "Data is the new oil.", "Expect the unexpected."]
+    fortunes = [
+        "A grand adventure awaits.",
+        "Data is the new oil.",
+        "Expect the unexpected."
+    ]
     return {"id": random.randint(1, 100), "msg": random.choice(fortunes)}
 
 @app.post("/api/submit", status_code=201)
