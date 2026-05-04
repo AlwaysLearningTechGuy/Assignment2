@@ -18,11 +18,11 @@ jobs:
         python-version: '3.11'
 
     - name: Install dependencies
-      working-directory: WonderfulMysteriousApp
+      working-directory: WonderfulMysteriousApp/WonderfulMysteriousApp
       run: |
         pip install --upgrade pip
         pip install -r requirements.txt
 
     - name: Run unit + integration tests
-      working-directory: WonderfulMysteriousApp
+      working-directory: WonderfulMysteriousApp/WonderfulMysteriousApp
       run: pytest -v
