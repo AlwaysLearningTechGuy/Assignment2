@@ -20,8 +20,7 @@ jobs:
     - name: Install dependencies
       run: |
         pip install --upgrade pip
-        pip install -r WonderfulMysteriousApp/requirements.txt
+        pip install -r requirements.txt
 
     - name: Run unit + integration tests
       run: pytest -v
-      working-directory: WonderfulMysteriousApp
