@@ -5,7 +5,7 @@ import random
 
 from app.rate_limiter import rate_limiter
 
-app = FastAPI(title="Wonderful and Mysterious API")
+app = FastAPI(title="Wonderful and Mysterious API v2.0")
 
 # In-memory database
 db = {"favorites": []}
