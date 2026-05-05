@@ -37,7 +37,7 @@ WonderfulMysteriousApp/
 | GET | `/api/favorites` | Returns the current favorites list |
 | POST | `/api/favorites` | Adds an item to the favorites list |
 
-> Rate limiting is enforced globally via middleware. Exceeding the limit returns `429 Too Many Requests`.
+> Rate limiting is enforced globally via middleware. Exceeding the limit returns `429 Too Many Requests`. The best way to try out these endpoints is using Swagger: http://localhost:8000/docs 
 
 ## Getting Started
 
