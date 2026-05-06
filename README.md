@@ -28,14 +28,16 @@ WonderfulMysteriousApp/
 
 ## API Endpoints
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/api/weather` | Returns mock weather data (optional `city` query param) |
-| GET | `/api/insight` | Returns a random insight |
-| GET | `/api/fortune` | Returns a random fortune |
-| POST | `/api/submit` | Accepts a structured `{ user, data }` payload |
-| GET | `/api/favorites` | Returns the current favorites list |
-| POST | `/api/favorites` | Adds an item to the favorites list |
+| Method | Endpoint | Input | Description |
+|--------|----------|-------|-------------|
+| GET | `/api/weather` | `city` (string, optional) | Returns mock weather data. Defaults to Seattle |
+| GET | `/api/insight` | `topic` (string, optional) | Returns a random insight. Defaults to "general" |
+| GET | `/api/fortune` | None | Returns a random fortune |
+| POST | `/api/submit` | `{ "user": string, "data": {} }` | Accepts a structured payload |
+| GET | `/api/favorites` | None | Returns the current favorites list |
+| POST | `/api/favorites` | `{ "id": integer }` | Adds an integer ID to the favorites list |
+
+> **Note:** The favorites endpoint stores integer IDs only — passing anything other than a whole number will return a `422 Unprocessable Entity` error. These IDs are intended to correspond to the `id` values returned by the `/api/insight` and `/api/fortune` endpoints.
 
 > Rate limiting is enforced globally via middleware. Exceeding the limit returns `429 Too Many Requests`. The best way to try out these endpoints is using Swagger: http://localhost:8000/docs 
 
