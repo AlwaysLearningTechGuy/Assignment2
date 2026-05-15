@@ -652,8 +652,30 @@
 }</pre>
       </div>
 
-      <div class="full-row">
-        <p style="font-size:12px;color:var(--muted);">
+<div class="full-row" style="margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--border);">
+        <p class="api-section-title">Test This Endpoint</p>
+        
+        <form id="submit-test-form" onsubmit="handleApiSubmit(event)" style="display: flex; flex-direction: column; gap: 12px; max-width: 400px; margin-bottom: 16px;">
+          <div style="display: flex; flex-direction: column; gap: 4px;">
+            <label style="font-size: 11px; color: var(--text-dim);">User Name:</label>
+            <input type="text" id="submit-username" value="alice" required style="background: var(--bg); border: 1px solid var(--border); color: var(--text); padding: 8px; font-family: 'DM Mono', monospace; font-size: 12px; border-radius: 3px;">
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 4px;">
+            <label style="font-size: 11px; color: var(--text-dim);">Score (Data):</label>
+            <input type="number" id="submit-score" value="99" required style="background: var(--bg); border: 1px solid var(--border); color: var(--text); padding: 8px; font-family: 'DM Mono', monospace; font-size: 12px; border-radius: 3px;">
+          </div>
+          
+          <a class="link-btn" href="/api/submit" onclick="document.getElementById('submit-test-form').requestSubmit(); event.preventDefault();" style="justify-content: center; cursor: pointer;">
+            <span class="arrow">→</span> Send POST Request
+          </a>
+        </form>
+
+        <div id="submit-response-container" style="display: none;">
+          <p class="api-section-title">Response Status: <span id="submit-status-code" style="color: var(--accent);"></span></p>
+          <pre id="submit-response-text" style="margin-top: 4px; max-height: 200px; overflow-y: auto;"></pre>
+        </div>
+
+        <p style="font-size:12px;color:var(--muted); margin-top: 16px;">
           Errors: <code style="color:var(--get)">422</code> for malformed JSON or missing fields &nbsp;·&nbsp;
           <code style="color:var(--get)">429</code> if rate limit exceeded
         </p>
