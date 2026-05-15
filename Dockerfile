@@ -11,6 +11,9 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Install test dependencies
 RUN pip install --no-cache-dir pytest pytest-asyncio httpx anyio
 
+# Make sure Python can find the app package
+ENV PYTHONPATH=/app
+
 # Run tests during build (fail build if tests fail)
 RUN pytest --maxfail=1 --disable-warnings
 
