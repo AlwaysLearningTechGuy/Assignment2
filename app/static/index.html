@@ -782,5 +782,50 @@
   }
   document.querySelector('.api-card').classList.add('open');
 </script>
+
+<script>
+  function toggle(header) {
+    const card = header.closest('.api-card');
+    card.classList.toggle('open');
+  }
+  document.querySelector('.api-card').classList.add('open');
+
+  // New function to handle the live API form submission
+  async function handleApiSubmit(event) {
+    event.preventDefault();
+    
+    const username = document.getElementById('submit-username').value;
+    const score = parseInt(document.getElementById('submit-score').value, 10);
+    
+    const responseContainer = document.getElementById('submit-response-container');
+    const statusCodeElement = document.getElementById('submit-status-code');
+    const responseTextElement = document.getElementById('submit-response-text');
+    
+    try {
+      const response = await fetch('/api/submit', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          user: username,
+          data: { score: score }
+        })
+      });
+      
+      const data = await response.json();
+      
+      // Update UI with the results
+      statusCodeElement.textContent = `${response.status} ${response.statusText}`;
+      responseTextElement.textContent = JSON.stringify(data, null, 2);
+      responseContainer.style.display = 'block';
+    } catch (error) {
+      statusCodeElement.textContent = 'Network Error';
+      responseTextElement.textContent = `Failed to connect to API: ${error.message}`;
+      responseContainer.style.display = 'block';
+    }
+  }
+</script>
+  
 </body>
 </html>
