@@ -718,37 +718,38 @@
     </div>
   </div>
 
-  <!-- FAVORITES POST -->
-  <div class="api-card" id="favorites-post">
-    <div class="api-header" onclick="toggle(this)">
-      <span class="method-tag method-post">POST</span>
-      <span class="endpoint-path">/api/favorites</span>
-      <span class="endpoint-name">Add Favorite</span>
-      <span class="chevron">▶</span>
+<!-- FAVORITES POST -->
+<div class="api-card" id="favorites-post">
+  <div class="api-header" onclick="toggle(this)">
+    <span class="method-tag method-post">POST</span>
+    <span class="endpoint-path">/api/favorites</span>
+    <span class="endpoint-name">Add Favorite</span>
+    <span class="chevron">▶</span>
+  </div>
+
+  <div class="api-body">
+    <p class="api-desc">
+      Adds an item ID to the in-memory favorites list and returns the full updated list.
+      Favorites persist for the lifetime of the running container and reset on restart.
+      The request body must contain an integer <code>id</code> field.
+    </p>
+
+    <div>
+      <p class="api-section-title">Request Body</p>
+      <table class="param-table">
+        <tr><th>Field</th><th>Type</th><th>Required</th><th>Description</th></tr>
+        <tr>
+          <td>id</td>
+          <td><span class="param-tag">integer</span></td>
+          <td><span class="param-tag param-required">required</span></td>
+          <td>Numeric ID of the item to add to favorites</td>
+        </tr>
+      </table>
     </div>
-    <div class="api-body">
-      <p class="api-desc">
-        Adds an item ID to the in-memory favorites list and returns the full updated list.
-        Favorites persist for the lifetime of the running container and reset on restart.
-        The request body must contain an integer <code>id</code> field.
-      </p>
 
-      <div>
-        <p class="api-section-title">Request Body</p>
-        <table class="param-table">
-          <tr><th>Field</th><th>Type</th><th>Required</th><th>Description</th></tr>
-          <tr>
-            <td>id</td>
-            <td><span class="param-tag">integer</span></td>
-            <td><span class="param-tag param-required">required</span></td>
-            <td>Numeric ID of the item to add to favorites</td>
-          </tr>
-        </table>
-      </div>
-
-      <div>
-        <p class="api-section-title">Example Request &amp; Response</p>
-        <pre><span class="comment">// POST /api/favorites</span>
+    <div>
+      <p class="api-section-title">Example Request &amp; Response</p>
+      <pre><span class="comment">// POST /api/favorites</span>
 { <span class="key">"id"</span>: <span class="val">42</span> }
 
 <span class="comment">// → 201 Created</span>
@@ -756,76 +757,81 @@
   <span class="key">"message"</span>: <span class="str">"Saved"</span>,
   <span class="key">"current_favorites"</span>: [<span class="val">42</span>]
 }</pre>
-      </div>
-      <div class="full-row" style="margin-top:24px;padding-top:24px;border-top:1px solid var(--border);">
-  <p class="api-section-title">Test This Endpoint</p>
-
-  <form id="favorites-post-form" onsubmit="handleFavoritesPost(event)" 
-        style="display:flex;flex-direction:column;gap:14px;max-width:420px;margin-bottom:18px;">
-
-    <div style="display:flex;flex-direction:column;gap:6px;">
-      <label style="font-size:11px;color:var(--text-dim);">Favorite ID:</label>
-      <input type="number" id="favorites-post-id" value="42" required
-             style="background:var(--bg);border:1px solid var(--border);color:var(--text);
-                    padding:9px;font-family:'DM Mono',monospace;font-size:12px;border-radius:3px;">
     </div>
 
-    <a class="link-btn" href="/api/favorites"
-       onclick="document.getElementById('favorites-post-form').requestSubmit(); event.preventDefault();"
-       style="justify-content:center;cursor:pointer;">
-      <span class="arrow">→</span> Send POST Request
-    </a>
-  </form>
+    <!-- ⭐ POLISHED FAVORITES POST UI ⭐ -->
+    <div class="full-row" style="margin-top:24px;padding-top:24px;border-top:1px solid var(--border);">
+      <p class="api-section-title">Test This Endpoint</p>
 
-  <div id="favorites-post-response-container" style="display:none;">
-    <p class="api-section-title">
-      Response Status: <span id="favorites-post-status-code" style="color:var(--accent);"></span>
-    </p>
-    <pre id="favorites-post-response-text" style="margin-top:6px;max-height:220px;overflow-y:auto;"></pre>
+      <form id="favorites-post-form" onsubmit="handleFavoritesPost(event)"
+            style="display:flex;flex-direction:column;gap:14px;max-width:420px;margin-bottom:18px;">
+
+        <div style="display:flex;flex-direction:column;gap:6px;">
+          <label style="font-size:11px;color:var(--text-dim);">Favorite ID:</label>
+          <input type="number" id="favorites-post-id" value="42" required
+                style="background:var(--bg);border:1px solid var(--border);color:var(--text);
+                      padding:9px;font-family:'DM Mono',monospace;font-size:12px;border-radius:3px;">
+        </div>
+
+        <a class="link-btn" href="/api/favorites"
+           onclick="document.getElementById('favorites-post-form').requestSubmit(); event.preventDefault();"
+           style="justify-content:center;cursor:pointer;">
+          <span class="arrow">→</span> Send POST Request
+        </a>
+      </form>
+
+      <div id="favorites-post-response-container" style="display:none;">
+        <p class="api-section-title">
+          Response Status: <span id="favorites-post-status-code" style="color:var(--accent);"></span>
+        </p>
+        <pre id="favorites-post-response-text" style="margin-top:6px;max-height:220px;overflow-y:auto;"></pre>
+      </div>
+    </div>
   </div>
 </div>
+
+<!-- FAVORITES GET -->
+<div class="api-card" id="favorites-get">
+  <div class="api-header" onclick="toggle(this)">
+    <span class="method-tag method-get">GET</span>
+    <span class="endpoint-path">/api/favorites</span>
+    <span class="endpoint-name">Get Favorites</span>
+    <span class="chevron">▶</span>
   </div>
 
-  <!-- FAVORITES GET -->
-  <div class="api-card" id="favorites-get">
-    <div class="api-header" onclick="toggle(this)">
-      <span class="method-tag method-get">GET</span>
-      <span class="endpoint-path">/api/favorites</span>
-      <span class="endpoint-name">Get Favorites</span>
-      <span class="chevron">▶</span>
+  <div class="api-body">
+    <p class="api-desc">
+      Returns the current in-memory favorites list. Handles both empty and populated states.
+      Data is stored for the lifetime of the container only — restarting resets the list to empty.
+    </p>
+
+    <div>
+      <p class="api-section-title">Parameters</p>
+      <table class="param-table">
+        <tr><th>Name</th><th>Type</th><th>Required</th><th>Description</th></tr>
+        <tr>
+          <td colspan="4" style="color:var(--muted); font-style:italic;">No parameters</td>
+        </tr>
+      </table>
     </div>
-    <div class="api-body">
-      <p class="api-desc">
-        Returns the current in-memory favorites list. Handles both empty and populated states.
-        Data is stored for the lifetime of the container only — restarting resets the list to empty.
-      </p>
 
-      <div>
-        <p class="api-section-title">Parameters</p>
-        <table class="param-table">
-          <tr><th>Name</th><th>Type</th><th>Required</th><th>Description</th></tr>
-          <tr>
-            <td colspan="4" style="color:var(--muted); font-style:italic;">No parameters</td>
-          </tr>
-        </table>
-      </div>
-
-      <div>
-        <p class="api-section-title">Example Response — 200 OK</p>
-        <pre><span class="comment">// GET /api/favorites</span>
+    <div>
+      <p class="api-section-title">Example Response — 200 OK</p>
+      <pre><span class="comment">// GET /api/favorites</span>
 { <span class="key">"favorites"</span>: [<span class="val">42</span>, <span class="val">7</span>] }
 
 <span class="comment">// When empty:</span>
 { <span class="key">"favorites"</span>: [] }</pre>
-      </div>
+    </div>
 
-      <div class="full-row">
-        <a class="link-btn" href="/api/favorites">
-          <span class="arrow">↗</span> Open /api/favorites
-        </a>
-      </div>
+    <!-- ⭐ SIMPLE GET LINK (NO FORM) ⭐ -->
+    <div class="full-row">
+      <a class="link-btn" href="/api/favorites">
+        <span class="arrow">↗</span> Open /api/favorites
+      </a>
     </div>
   </div>
+</div>
 
 </main>
 
