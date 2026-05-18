@@ -88,5 +88,8 @@ Additional testing documentation is available in the repository:
 - [`Test Plan.md`](./Test%20Plan.md) — Full testing strategy and scope
 - [`Test Strategy.md`](./Test%20Strategy.md) — High-level testing approach
 - [`Manual_Testing.md`](./Manual_Testing.md) — Manual test cases
+- ['E2E_Manual_Testing.md'](./E2E_Manual_Testing.md) - E2E manual testing
 - [`Updated Test Report.md`](./Updated%20Test%20Report.md) — Latest test results
+- ['E2E Test Report.md](./E2E%20Test%20Report.md) - Latest test report of the automated E2E tests
+- ['Golden Paths.md'](./GoldenPaths.md) - Golden Paths Scenarios
 
