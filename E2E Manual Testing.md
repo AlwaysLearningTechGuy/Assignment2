@@ -70,7 +70,7 @@ manually for a lightweight frontend like this.
 1. Rapidly call `/api/weather` 100 times using a script or curl loop.
 2. Confirm that all 100 requests return `200 OK`.
 3. Send a 101st request and confirm it returns `429 Too Many Requests` with body `{"detail": "Too Many Requests"}`.
-4. Wait longer than the rate-limit window (10 seconds).
+4. Wait longer than the rate-limit window ( 10 seconds -- Yep, better be a fast clicker to invoke :D ).
 5. Confirm that the next request returns `200 OK` again.
 
 ### Why Manual?
