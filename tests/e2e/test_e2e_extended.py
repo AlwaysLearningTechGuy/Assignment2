@@ -3,24 +3,73 @@ test_e2e_extended.py
 ====================
 Extended E2E tests addressing the known limitations identified in the E2E Test
 Report. These complement the existing test_e2e_health.py and
-test_e2e_core_flow.py files without modifying them.
-
-Limitations addressed:
-  1. POST /api/favorites not tested E2E → test_favorites_post_and_read_back
-  2. GET /api/favorites not in health check → test_all_endpoints_are_healthy
-  3. Landing page (/) not tested E2E → test_all_endpoints_are_healthy
-  4. No field-level schema assertions in health tests → dedicated schema tests
-  5. Rate limit not tested against the live server → test_rate_limit_returns_429
+test_e2e_core_flow.py without modifying them.
 
 Place this file at: tests/e2e/test_e2e_extended.py
+
+Limitations addressed:
+  1. POST /api/favorites not tested E2E
+  2. GET /api/favorites and GET / absent from health check
+  3. No field-level schema assertions in health tests
+  4. POST /api/submit not tested E2E with field assertions
+  5. Rate limit not tested against the live server
+
+Rate limit design note
+----------------------
+The live-server rate limit test (test_live_server_rate_limit_returns_429) uses
+its own session-scoped server fixture (isolated_app_server) that starts a second
+Uvicorn instance on port 8001. This gives the test a fresh rate limit budget
+of 100 and prevents it from consuming requests from the shared server on 8000
+that all other tests use. The shared session therefore never reaches 100 requests
+and no other test is affected.
 """
 
+import subprocess
+import time
+import socket
 import pytest
+import httpx
 
 
 # ---------------------------------------------------------------------------
-# 1. Expanded Health Check — all six endpoints including GET /api/favorites
-#    and the landing page, with field-level schema assertions
+# Isolated server fixture for rate limit test only
+# Starts a second Uvicorn on port 8001 with a clean rate limit budget.
+# ---------------------------------------------------------------------------
+
+def _wait_for_port(host, port, timeout=15):
+    start = time.time()
+    while time.time() - start < timeout:
+        try:
+            with socket.create_connection((host, port), timeout=1):
+                return
+        except OSError:
+            time.sleep(0.2)
+    raise RuntimeError(f"Server did not start on {host}:{port} within {timeout}s")
+
+
+@pytest.fixture(scope="session")
+def isolated_app_server():
+    """Start a second Uvicorn instance on port 8001 for the rate limit test."""
+    proc = subprocess.Popen(
+        ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8001"],
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+    )
+    _wait_for_port("127.0.0.1", 8001)
+    yield
+    proc.terminate()
+    proc.wait()
+
+
+@pytest.fixture
+def isolated_client(isolated_app_server):
+    """httpx.Client pointing at the isolated server on port 8001."""
+    with httpx.Client(base_url="http://127.0.0.1:8001") as c:
+        yield c
+
+
+# ---------------------------------------------------------------------------
+# 1. Expanded Health Check — adds GET /api/favorites and GET /
 # ---------------------------------------------------------------------------
 
 @pytest.mark.parametrize("path", [
@@ -39,7 +88,7 @@ def test_all_get_endpoints_return_200_and_json(client, path):
 
 
 def test_landing_page_returns_200_html(client):
-    """GET / returns 200 with HTML content containing all six endpoint paths."""
+    """GET / returns 200 HTML containing all five API endpoint paths."""
     r = client.get("/")
     assert r.status_code == 200
     assert "text/html" in r.headers.get("content-type", "")
@@ -82,7 +131,6 @@ def test_insight_response_schema(client):
     assert len(data["insight"]) > 0
     assert data["topic"] == "general"
     assert isinstance(data["id"], int)
-    assert isinstance(data["available_topics"], list)
     assert set(data["available_topics"]) == {
         "general", "technology", "productivity", "leadership", "creativity"
     }
@@ -107,7 +155,7 @@ def test_fortune_response_schema(client):
 
 
 def test_favorites_get_response_schema(client):
-    """GET /api/favorites always returns a dict with a 'favorites' list."""
+    """GET /api/favorites returns a dict with a 'favorites' list."""
     r = client.get("/api/favorites")
     assert r.status_code == 200
     data = r.json()
@@ -130,11 +178,10 @@ def test_favorites_post_returns_201_and_saved_message(client):
 
 
 def test_favorites_post_id_appears_in_get(client):
-    """An id POSTed to /api/favorites appears in the GET /api/favorites list."""
+    """An id POSTed to /api/favorites appears in GET /api/favorites."""
     unique_id = 7002
     r = client.post("/api/favorites", json={"id": unique_id})
     assert r.status_code == 201
-    # Read back and confirm membership (not equality — list may have prior items)
     r = client.get("/api/favorites")
     assert r.status_code == 200
     assert unique_id in r.json()["favorites"]
@@ -154,13 +201,13 @@ def test_favorites_multiple_posts_all_appear_in_get(client):
 
 
 def test_favorites_post_missing_id_returns_422(client):
-    """POST /api/favorites with no id field returns 422 Unprocessable Entity."""
+    """POST /api/favorites with no id field returns 422."""
     r = client.post("/api/favorites", json={"not_id": "oops"})
     assert r.status_code == 422
 
 
 def test_favorites_post_non_integer_id_returns_422(client):
-    """POST /api/favorites with a string id returns 422 — id must be integer."""
+    """POST /api/favorites with a string id returns 422."""
     r = client.post("/api/favorites", json={"id": "not-a-number"})
     assert r.status_code == 422
 
@@ -192,10 +239,7 @@ def test_submit_missing_data_returns_422(client):
 
 
 def test_submit_does_not_affect_favorites(client):
-    """
-    POST /api/submit does not write to favorites.
-    The favorites list is unchanged after a submit call.
-    """
+    """POST /api/submit has no effect on the favorites list."""
     before = set(client.get("/api/favorites").json()["favorites"])
     client.post("/api/submit", json={"user": "test", "data": {"x": 1}})
     after = set(client.get("/api/favorites").json()["favorites"])
@@ -203,19 +247,16 @@ def test_submit_does_not_affect_favorites(client):
 
 
 # ---------------------------------------------------------------------------
-# 5. Rate limiting against the live server
+# 5. Rate limiting — isolated server on port 8001
 #
-# Strategy: use the RateLimiter class directly with a fresh instance to avoid
-# consuming the global server limit (which would break subsequent tests).
-# The global middleware behavior is validated via the unit test suite.
-# A separate rate_limit_integration test using the actual live endpoint is
-# included but isolated via a unique IP simulation note.
+# Uses isolated_client (port 8001) so this test starts with a clean budget
+# of 100 and cannot affect any other test using the shared server on port 8000.
 # ---------------------------------------------------------------------------
 
-def test_rate_limiter_unit_allows_100_then_blocks(client):
+def test_rate_limiter_unit_allows_100_then_blocks():
     """
-    Validates rate limit threshold using a fresh RateLimiter instance (not the
-    global one), so this test does not consume the live server's request budget.
+    Validates the RateLimiter class directly with a fresh instance.
+    Does not touch any live server.
     """
     from app.rate_limiter import RateLimiter
     rl = RateLimiter(max_requests=100, window_seconds=10)
@@ -225,8 +266,8 @@ def test_rate_limiter_unit_allows_100_then_blocks(client):
     assert rl.is_allowed(test_ip) is False, "101st request should be blocked"
 
 
-def test_rate_limiter_is_per_ip(client):
-    """Rate limiting is per IP — exhausting one IP does not affect another."""
+def test_rate_limiter_is_per_ip():
+    """Rate limiting is per IP — exhausting one does not block another."""
     from app.rate_limiter import RateLimiter
     rl = RateLimiter(max_requests=3, window_seconds=60)
     for _ in range(3):
@@ -235,24 +276,20 @@ def test_rate_limiter_is_per_ip(client):
     assert rl.is_allowed("10.99.99.3") is True
 
 
-def test_live_server_rate_limit_returns_429(client):
+def test_live_server_rate_limit_returns_429(isolated_client):
     """
-    Sends 101 requests to the live server and confirms the 101st returns 429.
+    Sends 101 requests to the isolated server (port 8001) and confirms the
+    101st returns 429 Too Many Requests.
 
-    WARNING: This test consumes 101 requests from the global rate limiter on the
-    live server. It must be the last test to run in the E2E session, or subsequent
-    tests may receive unexpected 429 responses. The rate limit window is 10 seconds,
-    after which normal service resumes.
-
-    If this test causes flakiness, move it to a separate pytest mark and run it
-    in isolation: pytest tests/e2e -m ratelimit
+    Uses isolated_client (port 8001) — a fresh Uvicorn process with a clean
+    rate limit budget. This ensures the test is self-contained and cannot
+    affect any other test that uses the shared server on port 8000.
     """
     for i in range(100):
-        r = client.get("/api/fortune")
+        r = isolated_client.get("/api/fortune")
         assert r.status_code == 200, (
-            f"Request {i+1} should be 200 but got {r.status_code}. "
-            "Check if another test already consumed part of the rate limit budget."
+            f"Request {i+1} should be 200 but got {r.status_code}."
         )
-    r = client.get("/api/fortune")
+    r = isolated_client.get("/api/fortune")
     assert r.status_code == 429
     assert r.json()["detail"] == "Too Many Requests"
