@@ -25,17 +25,17 @@ WonderfulMysteriousApp/
 │
 ├── tests/
 │   ├── conftest.py              # Unit + integration fixtures
-│   ├── unit/
-│   ├── integration/
+│   ├── unit/                    # There are several unit tests in the directory
+│   ├── integration/             # There are several integration tests in the directory
 │   └── e2e/
 │       ├── conftest.py          # E2E server + client fixtures
 │       ├── test_e2e_core_flow.py
 │       ├── test_e2e_health.py
 │       └── test_e2e_extended.py
 │
-├── GoldenPaths.md               # Golden path analysis
-├── E2E_Test_Report.md           # E2E test execution summary
-├── E2E_Manual_Testing.md        # Manual UI testing beyond automation
+├── Golden Paths.md              # Golden path analysis
+├── E2E Test Report.md           # E2E test execution summary
+├── E2E Manual Testing.md        # Manual UI testing beyond automation
 └── README.md
 ```
 
@@ -106,11 +106,4 @@ A failing test in either job fails the build.
 
 ## Documentation
 
-Additional testing documentation is available in the repository:
-
-- [`Test Plan.md`](Test%20Plan.md) — Full testing strategy and scope
-- [`Test Strategy.md`](Test%20Strategy.md) — High-level testing approach
-- [`GoldenPaths.md`](GoldenPaths.md) — Most valuable end-to-end scenarios
-- [`E2E_Manual_Testing.md`](E2E_Manual_Testing.md) — Manual UI testing beyond automation
-- [`E2E_Test_Report.md`](E2E_Test_Report.md) — E2E test validation report
-- [`Updated Test Report.md`](Updated%20Test%20Report.md) — Latest overall test results
+Additional testing documentation is available in the repository.
